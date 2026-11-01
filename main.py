@@ -1,5 +1,5 @@
 # ==========================================
-# FILE: main.py
+# FILE: main.py - PART 1 OF 4
 # ==========================================
 import os
 import math
@@ -47,7 +47,10 @@ class SubscriptionTier(BaseModel):
     allowed_sectors: List[str]
     max_history_buffer: int
     allow_custom_pokes: bool
-    rate_limit_ff_mins: float
+    rate_limit_ff_mins:float
+    # ==========================================
+# FILE: main.py - PART 2 OF 4
+# ==========================================
 
 # ==========================================
 # ENTERPRISE MONETIZATION MAPS
@@ -93,6 +96,26 @@ TIER_TOKENS = {
     "plan_agtech_pro": "SKU-AQUA-PRO-77X",
     "plan_global_matrix": "SKU-GLOBAL-ENTERPRISE-DYNAMIC-MATRIX"
 }
+
+# ==========================================
+# SECTOR REGISTRY AND INITIAL STATE MATRICES
+# ==========================================
+SECTOR_REGISTRY = {
+    "icu_human": SectorConfig(sector_id="icu_human", base_targets={"heart_rate": 70.0}, decay_rates={"cortisol_clearance": 0.05}, interaction_coefficients={}),
+    "aquaculture": SectorConfig(sector_id="aquaculture", base_targets={"dissolved_oxygen": 95.0, "nitrogen_level": 0.5, "water_temp": 22.0, "native_plant_efficiency": 85.0}, decay_rates={"nitrogen_clearance": 0.03}, interaction_coefficients={}),
+    "bio_logistics": SectorConfig(sector_id="bio_logistics", base_targets={"ambient_temp": 4.0}, decay_rates={"thermal_leak": 0.04}, interaction_coefficients={"spoilage_multiplier": 1.8}),
+    "datacenter_symbiosis": SectorConfig(sector_id="datacenter_symbiosis", base_targets={"coolant_heat_output": 35.0}, decay_rates={"heat_transfer": 0.15}, interaction_coefficients={})
+}
+
+INITIAL_STATES = {
+    "icu_human": {"heart_rate": 90.0, "blood_pressure_systolic": 130.0, "endocrine_cortisol": 25.0},
+    "aquaculture": {"dissolved_oxygen": 95.0, "nitrogen_level": 0.8, "water_temp": 23.0, "native_plant_efficiency": 80.0},
+    "bio_logistics": {"ambient_temp": 4.5, "payload_decay_index": 0.0},
+    "datacenter_symbiosis": {"computing_load_pct": 45.0, "coolant_heat_output": 38.0, "soil_moisture": 65.0, "greenhouse_humidity": 75.0}
+}
+# ==========================================
+# FILE: main.py - PART 3 OF 4
+# ==========================================
 
 # ==========================================
 # KINEMATICS EQUATIONS
@@ -199,119 +222,109 @@ class UniversalDigitalTwinTimeline:
             self.history_ledger[self.current_step] = next_state
         return self.get_current_state()
 
-# ==========================================
-# REGISTRY CONSTANTS CONFIGURATION
-# ==========================================
-SECTOR_REGISTRY = {
-    "icu_human": SectorConfig(sector_id="icu_human", base_targets={"heart_rate": 70.0}, decay_rates={"cortisol_clearance": 0.05}, interaction_coefficients={}),
-    "aquaculture": SectorConfig(sector_id="aquaculture", base_targets={"dissolved_oxygen": 95.0, "nitrogen_level": 0.5, "water_temp": 22.0, "native_plant_efficiency": 85.0}, decay_rates={"nitrogen_clearance": 0.03}, interaction_coefficients={}),
-"bio_logistics": SectorConfig(sector_id="bio_logistics", base_targets={"ambient_temp": 4.0}, decay_rates={"thermal_leak": 0.04}, interaction_coefficients={"spoilage_multiplier": 1.8}),
-"datacenter_symbiosis": SectorConfig(sector_id="datacenter_symbiosis", base_targets={"coolant_heat_output": 35.0}, decay_rates={"heat_transfer": 0.15}, interaction_coefficients={})
-}
-INITIAL_STATES = {
-"icu_human": {"heart_rate": 90.0, "blood_pressure_systolic": 130.0, "endocrine_cortisol": 25.0},
-"aquaculture": {"dissolved_oxygen": 95.0, "nitrogen_level": 0.8, "water_temp": 23.0, "native_plant_efficiency": 80.0},
-"bio_logistics": {"ambient_temp": 4.5, "payload_decay_index": 0.0},
-"datacenter_symbiosis": {"computing_load_pct": 45.0, "coolant_heat_output": 38.0, "soil_moisture": 65.0, "greenhouse_humidity": 75.0}
-}
 current_sector = "icu_human"
 timeline = UniversalDigitalTwinTimeline(
-initial_state=SystemStateMatrix(timestamp_seq=0, metrics=INITIAL_STATES[current_sector].copy()),
-config=SECTOR_REGISTRY[current_sector]
+    initial_state=SystemStateMatrix(timestamp_seq=0, metrics=INITIAL_STATES[current_sector].copy()),
+    config=SECTOR_REGISTRY[current_sector]
 )
+# ==========================================
+# FILE: main.py - PART 4 OF 4
+# ==========================================
 
-==========================================
-
-
-CHRONO CONTROL MACHINE API ROUTERS
-
-
-==========================================
-
+# ==========================================
+# CHRONO CONTROL MACHINE API ROUTERS
+# ==========================================
 @app.get("/health", tags=["Infrastructure"])
 async def health_check():
-return {"status": "healthy", "engine": "Global-Matrix-Core"}
+    return {"status": "healthy", "engine": "Global-Matrix-Core"}
+
 @app.post("/initialize-sector", tags=["Security Verification Gates"])
 async def initialize_sector(sector_id: str = Body(..., embed=True), license_key: str = Body(..., embed=True)):
-global timeline, current_sector
-if license_key not in VALID_LICENSE_KEYS:
-raise HTTPException(status_code=401, detail="Invalid or expired Enterprise License Token.")
-plan_id = VALID_LICENSE_KEYS[license_key]
-active_plan = SUBSCRIPTION_PLANS[plan_id]
-if sector_id not in active_plan.allowed_sectors:
-raise HTTPException(status_code=403, detail="Access Denied: Sector not provisioned under your plan tier profile.")
-if sector_id not in SECTOR_REGISTRY:
-raise HTTPException(status_code=400, detail="Target sector infrastructure mapping layout not found.")
-current_sector = sector_id
-timeline = UniversalDigitalTwinTimeline(
-initial_state=SystemStateMatrix(timestamp_seq=0, metrics=INITIAL_STATES[sector_id].copy()),
-config=SECTOR_REGISTRY[sector_id],
-max_history=active_plan.max_history_buffer
-)
-return {"message": f"Successfully provisioned environment for {sector_id}", "tier_active": active_plan.tier_name, "history_buffer_allocated": active_plan.max_history_buffer, "current_step": timeline.current_step}
+    global timeline, current_sector
+    if license_key not in VALID_LICENSE_KEYS:
+        raise HTTPException(status_code=401, detail="Invalid or expired Enterprise License Token.")
+    plan_id = VALID_LICENSE_KEYS[license_key]
+    active_plan = SUBSCRIPTION_PLANS[plan_id]
+    if sector_id not in active_plan.allowed_sectors:
+        raise HTTPException(status_code=403, detail="Access Denied: Sector not provisioned under your plan tier profile.")
+    if sector_id not in SECTOR_REGISTRY:
+        raise HTTPException(status_code=400, detail="Target sector infrastructure mapping layout not found.")
+
+    current_sector = sector_id
+    timeline = UniversalDigitalTwinTimeline(
+        initial_state=SystemStateMatrix(timestamp_seq=0, metrics=INITIAL_STATES[sector_id].copy()),
+        config=SECTOR_REGISTRY[sector_id],
+        max_history=active_plan.max_history_buffer
+    )
+    return {"message": f"Successfully provisioned environment for {sector_id}", "tier_active": active_plan.tier_name, "history_buffer_allocated": active_plan.max_history_buffer, "current_step": timeline.current_step}
+
 @app.get("/telemetry", tags=["Simulation Controls"])
 async def get_telemetry():
-return {"current_step": timeline.current_step, "sector": current_sector, "metrics": timeline.get_current_state().metrics}
+    return {"current_step": timeline.current_step, "sector": current_sector, "metrics": timeline.get_current_state().metrics}
+
 @app.post("/step", tags=["Simulation Controls"])
 async def process_step():
-return {"state": timeline.process_realtime_step(), "current_step": timeline.current_step}
+    return {"state": timeline.process_realtime_step(), "current_step": timeline.current_step}
+
 @app.post("/poke", tags=["Simulation Controls"])
 async def execute_poke(variable_name: str = Body(..., embed=True), value: float = Body(..., embed=True)):
-try:
-updated = timeline.poke_variable(variable_name, value)
-return {"state": updated, "current_step": timeline.current_step}
-except ValueError as e:
-raise HTTPException(status_code=400, detail=str(e))
+    try:
+        updated = timeline.poke_variable(variable_name, value)
+        return {"state": updated, "current_step": timeline.current_step}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @app.post("/rewind", tags=["Simulation Controls"])
 async def rewind_timeline(steps: int = Body(..., embed=True)):
-return {"state": timeline.rewind(steps), "current_step": timeline.current_step}
+    return {"state": timeline.rewind(steps), "current_step": timeline.current_step}
+
 @app.post("/fast-forward", tags=["Simulation Controls"])
 async def fast_forward_timeline(minutes: float = Body(..., embed=True)):
-return {"state": timeline.fast_forward(minutes), "current_step": timeline.current_step}
+    return {"state": timeline.fast_forward(minutes), "current_step": timeline.current_step}
 
-==========================================
-
-
-REVENUE GENERATION GATEWAYS (Stripe B2B Matrix)
-
-
-==========================================
-
+# ==========================================
+# REVENUE GENERATION GATEWAYS (Stripe B2B Matrix)
+# ==========================================
 @app.post("/billing/create-checkout-session", tags=["Monetization Strategy Channel"])
 async def create_subscription_checkout(
-plan_id: str = Body(..., embed=True),
-success_url: str = Body("fly.dev", embed=True),
-cancel_url: str = Body("fly.dev", embed=True)
+    plan_id: str = Body(..., embed=True),
+    success_url: str = Body("https://fly.dev", embed=True),
+    cancel_url: str = Body("https://fly.dev", embed=True)
 ):
-if plan_id not in PLAN_PRICE_IDS:
-raise HTTPException(status_code=400, detail="Requested pricing package configuration does not exist.")
-try:
-session = stripe.checkout.Session.create(
-payment_method_types=['card'],
-line_items=[{'price': PLAN_PRICE_IDS[plan_id], 'quantity': 1}],
-mode='subscription',
-success_url=success_url,
-cancel_url=cancel_url,
-metadata={"target_plan_allocation": plan_id}
-)
-return {"checkout_url": session.url}
-except Exception as e:
-raise HTTPException(status_code=500, detail=f"Stripe Integration Disruption: {str(e)}")
+    if plan_id not in PLAN_PRICE_IDS:
+        raise HTTPException(status_code=400, detail="Requested pricing package configuration does not exist.")
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{'price': PLAN_PRICE_IDS[plan_id], 'quantity': 1}],
+            mode='subscription',
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={"target_plan_allocation": plan_id}
+        )
+        return {"checkout_url": session.url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stripe Integration Disruption: {str(e)}")
+
 @app.post("/billing/webhook", tags=["Monetization Strategy Channel"])
 async def stripe_automated_webhook_listener(payload: bytes = Body(...), sig_header: str = Header(None, alias="Stripe-Signature")):
-endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-try:
-event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-except Exception:
-raise HTTPException(status_code=400, detail="Security verification failed.")
-if event['type'] == 'checkout.session.completed':
-session = event['data']['object']
-target_plan = session.get("metadata", {}).get("target_plan_allocation")
-if target_plan in TIER_TOKENS:
-generated_key = TIER_TOKENS[target_plan]
-VALID_LICENSE_KEYS[generated_key] = target_plan
-print(f"🔒 TRANSACTION COMPLETE: Provisioned dynamic token -> {generated_key}")
-return {"status": "success"}
-if name == "main":
-import uvicorn
-uvicorn.run("main.py:app", host="0.0.0.0", port=8000, reload=True)
+    endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Security verification failed.")
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        target_plan = session.get("metadata", {}).get("target_plan_allocation")
+        if target_plan in TIER_TOKENS:
+            generated_key = TIER_TOKENS[target_plan]
+            VALID_LICENSE_KEYS[generated_key] = target_plan
+            print(f"🔒 TRANSACTION COMPLETE: Provisioned dynamic token -> {generated_key}")
+
+    return {"status": "success"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main.py:app", host="0.0.0.0", port=8000, reload=True)
+    
