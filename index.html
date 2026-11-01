@@ -1,0 +1,117 @@
+Enterprise Subscription Models (GA Framework)
+
+
+
+PokePlap Veta
+Veterinary Hospital Networks & CRO Platforms
+$1,499/mo
+
+Cross-Species Digital Twin Logic
+Multi-Scale Biochemical Kinetics
+Unlimited Physics-Informed Trials
+
+
+Deploy Vault Connection
+PokePlap Pulse
+Human Critical Care & ICU Systems
+$4,999/mo
+
+Whole-Organism Bio-Digital Twin Matrix
+Real-Time Asynchronous ICU Integration
+Predictive Biomarker Cascade Simulation
+
+
+Deploy Vault Connection
+Developer Platform SDK
+Hardware OEMs & Integrators
+$2,499/mo
+
+Native NVIDIA Holoscan Pipeline Hooks
+Low-Latency API Execution Architecture
+Custom Model Ingestion Subsystems
+
+
+Deploy Vault Connection
+
+
+Production Financial Clearing Matrix
+
+Secure parameters verified for inbound microtransactions and settlement routing structures under corporate trade secret registries.
+
+Primary Settlement Vault Node
+Merchant Route Barcode Verification Key
+Designated Legal Asset Holders
+let chartInstance = null;
+function switchTab(tabId) {
+document.querySelectorAll('.content-pane').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+document.getElementById(tabId).classList.add('active');
+event.target.classList.add('active');
+if (tabId === 'simulation') {
+initChart();
+}
+}
+function updateTimelineValue(val) {
+const label = document.getElementById('slider-value');
+if (parseInt(val) === 0) {
+label.innerText = "0 Seconds (Real-Time baseline)";
+} else if (parseInt(val) > 0) {
+label.innerText = +${val} Seconds (Predictive Fast-Forward);
+} else {
+label.innerText = ${val} Seconds (Temporal Matter Reverse-Track);
+}
+}
+function initChart(base = 80, projection = 80) {
+const ctx = document.getElementById('analyticsChart').getContext('2d');
+if (chartInstance) { chartInstance.destroy(); }
+chartInstance = new Chart(ctx, {
+type: 'line',
+data: {
+labels: ['T-60s', 'Baseline', 'Projection Output'],
+datasets: [{
+label: 'Physiological Metric Delta Vector',
+data: [base - 5, base, projection],
+borderColor: '#00F2FE',
+backgroundColor: 'rgba(0, 242, 254, 0.1)',
+tension: 0.3,
+fill: true
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+scales: {
+y: { grid: { color: '#24324F' }, ticks: { color: '#8E9BB4' } },
+x: { grid: { color: '#24324F' }, ticks: { color: '#8E9BB4' } }
+},
+plugins: { legend: { display: false } }
+}
+});
+}
+function executeScrubSimulation() {
+const baseHr = parseFloat(document.getElementById('baseHr').value);
+const pokeHr = parseFloat(document.getElementById('pokeHr').value);
+const timeDelta = parseInt(document.getElementById('timeSlider').value);
+const species = document.getElementById('speciesSelect').value;
+// Simplified mathematical client-side dynamic projection for rendering simulation
+const metabolicMap = { "human": 0.05, "canine": 0.12, "feline": 0.15, "equine": 0.02 };
+const k = metabolicMap[species];
+const decay = Math.exp(-k * (timeDelta / 60.0));
+const projectedHr = (baseHr + pokeHr) * decay + baseHr * (1.0 - decay);
+initChart(baseHr, projectedHr);
+const badge = document.getElementById('statusBadge');
+const variance = Math.abs(projectedHr - baseHr) / baseHr;
+if (variance > 0.25) {
+badge.className = "badge badge-warn";
+badge.innerText = "CRITICAL METRIC OMEGA WARNING";
+} else {
+badge.className = "badge badge-safe";
+badge.innerText = "SAFE OPERATIONAL STATE";
+}
+}
+function initiateSubBilling(tierId) {
+alert(Initializing secure clearance connection.\nVault Reference: 091017138\nRouting Verification: 692101680084\nTarget Tier: ${tierId});
+}
+window.onload = function() {
+initChart();
+};
