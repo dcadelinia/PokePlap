@@ -1,54 +1,320 @@
-    <!-- =======================================================
-         ADDITIONAL COMPONENT: INVESTOR & SPONSORSHIP MATRIX
-         ======================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PokePlap Enterprise Engine Management Console</title>
+    <style>
+        :root { 
+            --bg-dark: #070b14; 
+            --panel-bg: #111a2e; 
+            --accent-blue: #2563eb; 
+            --accent-green: #059669; 
+            --accent-red: #dc2626; 
+            --border: #1e293b; 
+            --text: #f8fafc; 
+        }
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: var(--bg-dark); 
+            color: var(--text); 
+            padding: 25px; 
+            margin: 0; 
+        }
+        .wrapper { max-width: 1300px; margin: 0 auto; }
+        header { 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 20px; 
+            margin-bottom: 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+        .panel { 
+            background: var(--panel-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px;
+        }
+        .panel-header { 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            color: #94a3b8; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            letter-spacing: 1px; 
+        }
+        .vitals-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            margin-bottom: 25px; 
+        }
+        .card { 
+            background: rgba(0,0,0,0.2); 
+            border: 1px solid var(--border); 
+            padding: 20px; 
+            border-radius: 6px; 
+            text-align: center; 
+        }
+        .card-val { font-size: 32px; font-weight: bold; color: var(--accent-green); margin: 5px 0; }
+        .card-lbl { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+        .control-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; margin-bottom: 6px; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
+        select, input, button { 
+            width: 100%; 
+            padding: 12px; 
+            background: var(--bg-dark); 
+            border: 1px solid var(--border); 
+            color: white; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-weight: 600; 
+        }
+        button { cursor: pointer; background: var(--accent-blue); border: none; transition: filter 0.2s; }
+        button:hover { filter: brightness(1.2); }
+        .footer-bar { 
+            margin-top: 25px; 
+            background: var(--panel-bg); 
+            border: 1px solid var(--border); 
+            padding: 15px; 
+            border-radius: 8px; 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            font-family: monospace; 
+        }
+        .config-row { display: flex; gap: 15px; width: 100%; }
+        .config-row > div { flex: 1; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+        <header>
+        <div>
+            <h1 style="margin:0; font-size:26px;">PokePlap Enterprise Core Matrix</h1>
+            <small style="color:#64748b;">Cross-Sector Predictive Time-Scrubbing Interface Loop</small>
+        </div>
+        <div style="font-size: 12px; font-weight: bold; color: var(--accent-blue); background: rgba(37,99,235,0.1); padding: 8px 15px; border-radius: 4px; border: 1px solid rgba(37,99,235,0.2);">
+            NVIDIA QUANTUM SIMULATION PIPELINE ACTIVE
+        </div>
+    </header>
+
+    <!-- Pricing Plans Section -->
+    <div class="panel" style="border-color: var(--accent-green);">
+        <div class="panel-header" style="color: var(--accent-green);">Available Commercial Licensing Plans</div>
+        <div class="config-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <div class="card" style="border-color: #334155;">
+                <div class="card-lbl">Clinical Track</div>
+                <div class="card-val" style="font-size: 24px; color: white;">$149<span style="font-size:12px; color:#64748b;">/mo</span></div>
+                <button style="background: #3b82f6; margin-top:10px; font-size:12px;" onclick="redirectToStripe('plan_icu_basic')">Buy Clinical Access</button>
+            </div>
+            <div class="card" style="border-color: var(--accent-blue);">
+                <div class="card-lbl">AgTech Pro Track</div>
+                <div class="card-val" style="font-size: 24px; color: var(--accent-blue);">$499<span style="font-size:12px; color:#64748b;">/mo</span></div>
+                <button style="background: var(--accent-blue); margin-top:10px; font-size:12px;" onclick="redirectToStripe('plan_agtech_pro')">Buy AgTech License</button>
+            </div>
+            <div class="card" style="border-color: var(--accent-green);">
+                <div class="card-lbl">Global Enterprise Matrix</div>
+                <div class="card-val" style="font-size: 24px; color: var(--accent-green);">$1,999<span style="font-size:12px; color:#64748b;">/mo</span></div>
+                <button style="background: var(--accent-green); margin-top:10px; font-size:12px;" onclick="redirectToStripe('plan_global_matrix')">Buy Enterprise Matrix</button>
+            </div>
+        </div>
+    </div>
+        <!-- License & Initialization Panel -->
+    <div class="panel">
+        <div class="panel-header">Workspace Environment Authorization</div>
+        <div class="config-row">
+            <div>
+                <label>Target Workspace Infrastructure</label>
+                <select id="sector-selector">
+                    <option value="icu_human">Legacy Track: Human ICU Telemetry</option>
+                    <option value="aquaculture">AgTech Track: Symbiotic Biome Aquaculture</option>
+                    <option value="bio_logistics">Logistics Track: Cold Chain Biological Freight</option>
+                    <option value="datacenter_symbiosis">CleanTech Track: Industrial Data Center Greenhouse</option>
+                </select>
+            </div>
+            <div>
+                <label>Enterprise Token License Key</label>
+                <input type="text" id="license-key" placeholder="e.g. SKU-GLOBAL-ENTERPRISE-DYNAMIC-MATRIX" value="SKU-GLOBAL-ENTERPRISE-DYNAMIC-MATRIX">
+            </div>
+            <div style="flex: 0 0 200px; display: flex; align-items: flex-end;">
+                <button style="background: var(--accent-blue);" onclick="switchSector()">Initialize Sector Module</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Live Environment Telemetry Feed -->
+        <div class="panel">
+            <div class="panel-header" id="monitor-title">Telemetry Stream Engine Monitor</div>
+            <div class="vitals-grid" id="vitals-container"></div>
+            <button style="background:#475569; font-size: 14px;" onclick="stepFrame()">Advance Baseline Single Step (1 Min)</button>
+        </div>
+
+        <!-- System Controls Matrix -->
+        <div class="panel">
+            <div class="panel-header">Matrix Manipulation Matrix ("Poke")</div>
+            <div class="control-group">
+                <label>Target Variable Factor</label>
+                <select id="poke-target"></select>
+            </div>
+            <div class="control-group">
+                <label>Injection Scalar Override Value</label>
+                <input type="number" id="poke-value" step="any" placeholder="Enter target overlay value">
+            </div>
+            <button style="background:var(--accent-red); font-size: 14px;" onclick="poke()">Execute Vector Poke Override</button>
+
+            <div style="margin-top: 25px;" class="panel-header">Time-Scrubbing Calculations Engine</div>
+            <div class="control-group">
+                <label>Fast-Forward Projection Bounds (Minutes)</label>
+                <input type="number" id="ff-val" value="15">
+                <button style="background:var(--accent-green); margin-top:8px;" onclick="fastForward()">Run Forward Prediction Matrix</button>
+            </div>
+            <div class="control-group" style="margin-top:20px;">
+                <label>Rewind Buffer History Frames</label>
+                <input type="number" id="rw-val" value="5">
+                <button style="background:#4b5563; margin-top:8px;" onclick="rewind()">Restore Historical Snapshot</button>
+            </div>
+        </div>
+    </div>
+        <!-- Capitalization & Sponsorship Workspace -->
     <div class="panel" style="margin-top: 25px; border-color: rgba(16, 185, 129, 0.3); background: linear-gradient(180deg, #111a2e 0%, #0d1527 100%);">
         <div class="panel-header" style="color: var(--accent-green); display: flex; justify-content: space-between; align-items: center;">
             <span>Capitalization & Enterprise Sponsorship Workspace</span>
             <span style="font-size: 11px; background: rgba(16, 185, 129, 0.1); padding: 2px 8px; border-radius: 4px;">VC-READY KPI PORTAL</span>
         </div>
-        
-        <!-- Live B2B SaaS Performance Metrics -->
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
             <div class="card" style="background: rgba(16, 185, 129, 0.02); border-color: rgba(16, 185, 129, 0.15);">
                 <div class="card-lbl" style="color: #a7f3d0;">Computed MRR Potential</div>
                 <div class="card-val" style="color: var(--accent-green); font-size: 24px;">$42,500 <span style="font-size: 12px; color: #64748b;">/mo</span></div>
-                <div class="card-lbl" style="font-size: 9px; margin-top: 5px;">Based on active enterprise allocation pipelines</div>
             </div>
             <div class="card" style="background: rgba(37, 99, 235, 0.02); border-color: rgba(37, 99, 235, 0.15);">
-                <div class="card-lbl" style="color: #bfdbfe;">Simulation Efficiency</div>
+                <div class="card-lbl" style="color: #bfdbfe;">Simulation Uptime</div>
                 <div class="card-val" style="color: var(--accent-blue); font-size: 24px;">99.98%</div>
-                <div class="card-lbl" style="font-size: 9px; margin-top: 5px;">Parallelized vector matrix processing uptime</div>
             </div>
             <div class="card" style="background: rgba(255, 255, 255, 0.02);">
                 <div class="card-lbl">Open-Source Support</div>
                 <div class="card-val" style="color: #f1f5f9; font-size: 24px;" id="sponsor-count">14 <span style="font-size: 12px; color: #64748b;">Backers</span></div>
-                <div class="card-lbl" style="font-size: 9px; margin-top: 5px;">Community developers sustaining core priority art</div>
             </div>
         </div>
-
-        <!-- Call-to-Actions for Funders -->
         <div class="config-row" style="gap: 15px;">
-            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
+            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border: 1px solid var(--border); flex: 1;">
                 <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #f8fafc;">Institutional Seed Round</h4>
-                <p style="margin: 0 0 12px 0; font-size: 12px; color: #94a3b8; line-height: 1.4;">Review our pitch deck mapping expansion into AgTech, Cold Chain logistics, and CleanTech data systems.</p>
                 <button style="background: var(--accent-green); padding: 10px; font-size: 12px;" onclick="window.open('https://github.com', '_blank')">Access Investor Data Room</button>
             </div>
-            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
+            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border: 1px solid var(--border); flex: 1;">
                 <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #f8fafc;">Sponsor Open-Source Art</h4>
-                <p style="margin: 0 0 12px 0; font-size: 12px; color: #94a3b8; line-height: 1.4;">Support the developers expanding these native biological timeline engines under Apache-2.0 frameworks.</p>
                 <button style="background: #475569; padding: 10px; font-size: 12px;" onclick="triggerSponsorship()">Become a GitHub Sponsor</button>
             </div>
         </div>
-    </div
-         >
-// Interactive Capitalization Functions
-    function triggerSponsorship() {
-        alert("Redirecting to the dynamic GitHub Sponsors pipeline allocation portal for David Fabian Cadelinia & Odynex Axis Logistics LLC. Your support expands non-linear timeline simulation architectures globally!");
-        window.open('https://github.com', '_blank');
-        
-        // Dynamically increment backer metrics as responsive feedback loop
-        const el = document.getElementById('sponsor-count');
-        el.innerHTML = '15 <span style="font-size: 12px; color: var(--accent-green);">+ You!</span>';
-        logStatus("Initiated community micro-donation routing gateway sequence.");
+    </div>
+
+    <!-- Live Status Bar -->
+    <div class="footer-bar">
+        <span style="color:var(--accent-blue); font-weight:bold;">ENGINE HEAD:</span>
+        <div id="step-lbl" style="background:#000; padding:5px 12px; border-radius:4px; border: 1px solid var(--border);">STEP: 0000</div>
+        <div id="log" style="color:#94a3b8; font-size:13px;">System online. Operational matrix listening.</div>
+    </div>
+</div>
+<script>
+    const API = window.location.origin;
+    let activeMetrics = {};
+
+    function logStatus(msg) {
+        document.getElementById('log').innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    }
+
+    async function redirectToStripe(planId) {
+        logStatus(`Contacting Stripe billing gateway for ${planId}...`);
+        try {
+            const res = await fetch(`${API}/billing/create-checkout-session`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ plan_id: planId, success_url: window.location.href, cancel_url: window.location.href })
+            });
+            const data = await res.json();
+            if (data.checkout_url) window.location.href = data.checkout_url;
+        } catch(err) { logStatus("Billing gateway network error."); }
+    }
+
+    async function switchSector() {
+        const sector = document.getElementById('sector-selector').value;
+        const key = document.getElementById('license-key').value.trim();
+        try {
+            const res = await fetch(`${API}/initialize-sector`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ sector_id: sector, license_key: key })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail);
+            logStatus(`Workspace provisioned. Active Tier: ${data.tier_active}`);
+            getTelemetry();
+        } catch (err) { alert(err.message); }
+    }
+
+    async function getTelemetry() {
+        try {
+            const res = await fetch(`${API}/telemetry`);
+            const data = await res.json();
+            activeMetrics = data.metrics;
+            document.getElementById('step-lbl').innerText = `STEP: ${data.current_step}`;
+            document.getElementById('monitor-title').innerText = `Active Stream: [${data.sector.toUpperCase()}]`;
+
+            const container = document.getElementById('vitals-container');
+            const selector = document.getElementById('poke-target');
+            const currentTarget = selector.value;
+
+            container.innerHTML = ''; selector.innerHTML = '';
+            for (let key in activeMetrics) {
+                container.innerHTML += `<div class="card"><div class="card-lbl">${key.replace(/_/g, ' ')}</div><div class="card-val">${activeMetrics[key]}</div></div>`;
+                selector.innerHTML += `<option value="${key}">${key.replace(/_/g, ' ')}</option>`;
+            }
+            if(currentTarget && activeMetrics[currentTarget] !== undefined) selector.value = currentTarget;
+        } catch (err) { logStatus("Sync timeout."); }
+    }
+
+    async function stepFrame() { await fetch(`${API}/step`, {method: 'POST'}); getTelemetry(); }
+    
+    async function poke() {
+        const vName = document.getElementById('poke-target').value;
+        const val = parseFloat(document.getElementById('poke-value').value);
+        await fetch(`${API}/poke`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ variable_name: vName, value: val })
+        });
+        getTelemetry();
     }
     
+    async function fastForward() {
+        const mins = parseFloat(document.getElementById('ff-val').value);
+        await fetch(`${API}/fast-forward`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ minutes: mins })
+        });
+        getTelemetry();
+    }
+    
+    async function rewind() {
+        const steps = parseInt(document.getElementById('rw-val').value);
+        await fetch(`${API}/rewind`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ steps: steps })
+        });
+        getTelemetry();
+    }
+    
+    function triggerSponsorship() {
+        window.open('https://github.com', '_blank');
+        document.getElementById('sponsor-count').innerHTML = '15 <span style="font-size:12px; color:var(--accent-green);">+ You!</span>';
+    }
+    
+    window.onload = getTelemetry;
+</script>
+</body>
+</html>
