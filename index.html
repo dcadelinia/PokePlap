@@ -1,3 +1,21 @@
+SAFE OPERATIONAL STATE
+
+
+
+
+
+
+AMR & Logistics Node Configurations
+Asset Velocity Magnitude Vector (X-Axis m/s)
+Asset Operational Mass (kg)
+Braking Friction Coefficient (μ)
+Compute Boundary Crossings
+Foresight Loop Manifest
+Intervention Action Command
+CONTINUOUS_FLOW
+
+Calculated Hazard Friction Index
+Calculated Safety Emergency Stopping Distance
 Enterprise Subscription Models (GA Framework)
 
 
@@ -23,7 +41,7 @@ Predictive Biomarker Cascade Simulation
 
 Deploy Vault Connection
 Developer Platform SDK
-Hardware OEMs & Integrators
+Hardware OEMs & Logistics Networks
 $2,499/mo
 
 Native NVIDIA Holoscan Pipeline Hooks
@@ -41,36 +59,38 @@ Secure parameters verified for inbound microtransactions and settlement routing 
 Primary Settlement Vault Node
 Merchant Route Barcode Verification Key
 Designated Legal Asset Holders
-let chartInstance = null;
+let bioChartInstance = null;
 function switchTab(tabId) {
 document.querySelectorAll('.content-pane').forEach(p => p.classList.remove('active'));
 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 document.getElementById(tabId).classList.add('active');
-event.target.classList.add('active');
-if (tabId === 'simulation') {
-initChart();
+if(tabId === 'biological') document.getElementById('btn-bio').classList.add('active');
+if(tabId === 'kinematics') document.getElementById('btn-kin').classList.add('active');
+if(tabId === 'subscriptions') document.getElementById('btn-sub').classList.add('active');
+if(tabId === 'clearing') document.getElementById('btn-clr').classList.add('active');
+if (tabId === 'biological') {
+executeBioSimulation();
 }
 }
-function updateTimelineValue(val) {
-const label = document.getElementById('slider-value');
-if (parseInt(val) === 0) {
-label.innerText = "0 Seconds (Real-Time baseline)";
-} else if (parseInt(val) > 0) {
-label.innerText = +${val} Seconds (Predictive Fast-Forward);
-} else {
-label.innerText = ${val} Seconds (Temporal Matter Reverse-Track);
+function updateBioValue(val) {
+const label = document.getElementById('bio-slider-value');
+if (parseInt(val) === 0) label.innerText = "0 Seconds (Real-Time baseline)";
+else if (parseInt(val) > 0) label.innerText = +${val} Seconds (Predictive Fast-Forward);
+else label.innerText = ${val} Seconds (Temporal Matter Reverse-Track);
 }
+function updateKinValue(val) {
+document.getElementById('kin-slider-value').innerText = ${parseFloat(val).toFixed(1)} Seconds (Foresight Window);
 }
-function initChart(base = 80, projection = 80) {
-const ctx = document.getElementById('analyticsChart').getContext('2d');
-if (chartInstance) { chartInstance.destroy(); }
-chartInstance = new Chart(ctx, {
+function initBioChart(base = 80, projection = 80) {
+const ctx = document.getElementById('bioChart').getContext('2d');
+if (bioChartInstance) { bioChartInstance.destroy(); }
+bioChartInstance = new Chart(ctx, {
 type: 'line',
 data: {
-labels: ['T-60s', 'Baseline', 'Projection Output'],
+labels: ['T-60s', 'Baseline', 'Projected Path'],
 datasets: [{
 label: 'Physiological Metric Delta Vector',
-data: [base - 5, base, projection],
+data: [base - 4, base, projection],
 borderColor: '#00F2FE',
 backgroundColor: 'rgba(0, 242, 254, 0.1)',
 tension: 0.3,
@@ -88,18 +108,17 @@ plugins: { legend: { display: false } }
 }
 });
 }
-function executeScrubSimulation() {
+function executeBioSimulation() {
 const baseHr = parseFloat(document.getElementById('baseHr').value);
 const pokeHr = parseFloat(document.getElementById('pokeHr').value);
-const timeDelta = parseInt(document.getElementById('timeSlider').value);
+const timeDelta = parseInt(document.getElementById('bioTimeSlider').value);
 const species = document.getElementById('speciesSelect').value;
-// Simplified mathematical client-side dynamic projection for rendering simulation
 const metabolicMap = { "human": 0.05, "canine": 0.12, "feline": 0.15, "equine": 0.02 };
 const k = metabolicMap[species];
 const decay = Math.exp(-k * (timeDelta / 60.0));
 const projectedHr = (baseHr + pokeHr) * decay + baseHr * (1.0 - decay);
-initChart(baseHr, projectedHr);
-const badge = document.getElementById('statusBadge');
+initBioChart(baseHr, projectedHr);
+const badge = document.getElementById('bioStatusBadge');
 const variance = Math.abs(projectedHr - baseHr) / baseHr;
 if (variance > 0.25) {
 badge.className = "badge badge-warn";
@@ -109,9 +128,30 @@ badge.className = "badge badge-safe";
 badge.innerText = "SAFE OPERATIONAL STATE";
 }
 }
+function executeKinematicsSimulation() {
+const vel = parseFloat(document.getElementById('assetVelocity').value);
+const coeff = parseFloat(document.getElementById('frictionCoeff').value);
+const lookahead = parseFloat(document.getElementById('kinSlider').value);
+// Physical emergency braking equation tracking: d = v^2 / (2 * mu * g)
+const g = 9.81;
+const stoppingDistance = (vel ** 2) / (2 * coeff * g);
+document.getElementById('kinStoppingDist').value = ${stoppingDistance.toFixed(2)} meters;
+// Synthetic boundary hazard grading based on lookahead vectors
+const simulatedHazard = (vel / (coeff * 15)) * (lookahead / 13.0);
+const dynamicHazardIndex = Math.min(simulatedHazard, 1.0);
+document.getElementById('kinHazardOutput').value = dynamicHazardIndex.toFixed(3);
+const cmdBadge = document.getElementById('kinCommandBadge');
+if (dynamicHazardIndex >= 0.5) {
+cmdBadge.className = "badge badge-warn";
+cmdBadge.innerText = "TRIGGER_AUTOMATED_FORESIGHT_UNDO_BRAKING";
+} else {
+cmdBadge.className = "badge badge-success";
+cmdBadge.innerText = "CONTINUOUS_FLOW";
+}
+}
 function initiateSubBilling(tierId) {
 alert(Initializing secure clearance connection.\nVault Reference: 091017138\nRouting Verification: 692101680084\nTarget Tier: ${tierId});
 }
 window.onload = function() {
-initChart();
+executeBioSimulation();
 };
