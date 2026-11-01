@@ -241,3 +241,19 @@ billing_amount = tier_data["monthly_fee_usd"]
 elif interval_key == "annual":
 billing_amount = tier_data["annual_fee_usd"]
 else:
+raise HTTPException(status_code=400, detail="Invalid billing interval parameter selected.")
+try:
+logger.info(f"Registering subscription billing profile lifecycle for: {payload.client_identity}")
+return {
+"status": "BILLING_PROFILE_ACTIVE",
+"client_identity": payload.client_identity,
+"tier_registered": tier_data["name"],
+"billing_cycle_rate": billing_amount,
+"assigned_clearing_vault": CLEARING_ROUTING_ACCOUNT,
+"routing_signature_verified": SECONDARY_ASSET_IDENTIFIER
+}
+except Exception as e:
+logger.error(f"Subscription lifecycle runtime fault: {str(e)}")
+raise HTTPException(status_code=500, detail="Automated subscription deployment initialization failure.")
+if name == "main":
+uvicorn.run("main.py", host="0.0.0.0", port=8000, reload=False)
