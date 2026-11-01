@@ -1,0 +1,6 @@
+Timestamp,Asset_Name,Identifier_Ref,Verification_Status,Legal_Holder,Governance_Protocol
+2026-11-01T13:02:00Z,Primary Settlement Vault Node,091017138,PROVISIONED_ACTIVE,David Fabian Cadelinia,WTO-TRIPS Art.39
+2026-11-01T13:02:00Z,Merchant Route Verification Key,692101680084,ROUTING_VERIFIED,Odynex Axis Logistics LLC,TUTSA Ch.134A
+2026-11-01T13:02:00Z,Live Production Ingress Router,https://pokeplap.fly.dev/,OPERATIONAL_HEALTHY,David Fabian Cadelinia / Odynex Axis Logistics LLC,DTSA 18 U.S.C
+2026-11-01T13:02:00Z,Multi-Tenant Security Architecture,models.py,COMPLIANT_COMPILED,Odynex Axis Logistics LLC,TUTSA Trade Secret
+2026-11-01T13:02:00Z,NVIDIA Parallel Execution Grid,config.pbtxt,GPU_INSTANCE_BOUND,David Fabian Cadelinia,NVIDIA Hardware Stack
