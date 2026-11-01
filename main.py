@@ -7,7 +7,7 @@ import stripe
 from fastapi import FastAPI, HTTPException, Body, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
+from typing import Dict, List
 
 # Initialize Core Enterprise Application Framework
 app = FastAPI(
@@ -29,7 +29,7 @@ app.add_middleware(
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "sk_test_mock_placeholder_key_if_empty")
 
 # ==========================================
-# DATA OBJECT ARCHITECTURES (Formerly models.py)
+# DATA OBJECT ARCHITECTURES
 # ==========================================
 class SystemStateMatrix(BaseModel):
     timestamp_seq: int = Field(..., description="Sequential simulation frame index")
@@ -50,7 +50,7 @@ class SubscriptionTier(BaseModel):
     rate_limit_ff_mins: float
 
 # ==========================================
-# ENTERPRISE MONETIZATION MAPS (Formerly subscription_config.py)
+# ENTERPRISE MONETIZATION MAPS
 # ==========================================
 SUBSCRIPTION_PLANS: Dict[str, SubscriptionTier] = {
     "plan_icu_basic": SubscriptionTier(
@@ -95,7 +95,7 @@ TIER_TOKENS = {
 }
 
 # ==========================================
-# KINEMATICS EQUATIONS (Formerly kinematics_engine.py)
+# KINEMATICS EQUATIONS
 # ==========================================
 class UniversalKinematicsEngine:
     @staticmethod
@@ -156,7 +156,7 @@ class UniversalKinematicsEngine:
         return SystemStateMatrix(timestamp_seq=current.timestamp_seq + 1, metrics=new_metrics, metadata=current.metadata)
 
 # ==========================================
-# SIMULATION CHRONO RUNTIME (Formerly simulation.py)
+# SIMULATION CHRONO RUNTIME
 # ==========================================
 class UniversalDigitalTwinTimeline:
     def __init__(self, initial_state: SystemStateMatrix, config: SectorConfig, max_history: int = 2000):
@@ -200,11 +200,11 @@ class UniversalDigitalTwinTimeline:
         return self.get_current_state()
 
 # ==========================================
-# REGISTRY CONSTANTS CONFIGURATION BASE INITIALIZATION
+# REGISTRY CONSTANTS CONFIGURATION
 # ==========================================
 SECTOR_REGISTRY = {
     "icu_human": SectorConfig(sector_id="icu_human", base_targets={"heart_rate": 70.0}, decay_rates={"cortisol_clearance": 0.05}, interaction_coefficients={}),
-      "aquaculture": SectorConfig(sector_id="aquaculture", base_targets={"dissolved_oxygen": 95.0, "nitrogen_level": 0.5, "water_temp": 22.0, "native_plant_efficiency": 85.0}, decay_rates={"nitrogen_clearance": 0.03}, interaction_coefficients={}),
+    "aquaculture": SectorConfig(sector_id="aquaculture", base_targets={"dissolved_oxygen": 95.0, "nitrogen_level": 0.5, "water_temp": 22.0, "native_plant_efficiency": 85.0}, decay_rates={"nitrogen_clearance": 0.03}, interaction_coefficients={}),
 "bio_logistics": SectorConfig(sector_id="bio_logistics", base_targets={"ambient_temp": 4.0}, decay_rates={"thermal_leak": 0.04}, interaction_coefficients={"spoilage_multiplier": 1.8}),
 "datacenter_symbiosis": SectorConfig(sector_id="datacenter_symbiosis", base_targets={"coolant_heat_output": 35.0}, decay_rates={"heat_transfer": 0.15}, interaction_coefficients={})
 }
@@ -239,7 +239,7 @@ raise HTTPException(status_code=401, detail="Invalid or expired Enterprise Licen
 plan_id = VALID_LICENSE_KEYS[license_key]
 active_plan = SUBSCRIPTION_PLANS[plan_id]
 if sector_id not in active_plan.allowed_sectors:
-raise HTTPException(status_code=403, detail=f"Access Denied: Sector not provisioned under your current plan tier profile.")
+raise HTTPException(status_code=403, detail="Access Denied: Sector not provisioned under your plan tier profile.")
 if sector_id not in SECTOR_REGISTRY:
 raise HTTPException(status_code=400, detail="Target sector infrastructure mapping layout not found.")
 current_sector = sector_id
@@ -303,14 +303,14 @@ endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 try:
 event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
 except Exception:
-raise HTTPException(status_code=400, detail="Security validation authentication mismatch signature execution.")
+raise HTTPException(status_code=400, detail="Security verification failed.")
 if event['type'] == 'checkout.session.completed':
 session = event['data']['object']
 target_plan = session.get("metadata", {}).get("target_plan_allocation")
 if target_plan in TIER_TOKENS:
 generated_key = TIER_TOKENS[target_plan]
 VALID_LICENSE_KEYS[generated_key] = target_plan
-print(f"🔒 TRANSACTION COMPLETE: Provisioned dynamic system access token key -> {generated_key}")
+print(f"🔒 TRANSACTION COMPLETE: Provisioned dynamic token -> {generated_key}")
 return {"status": "success"}
 if name == "main":
 import uvicorn
