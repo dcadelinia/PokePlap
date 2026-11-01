@@ -5,304 +5,159 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PokePlap Clinical Control Console</title>
+    <title>PokePlap Enterprise Engine Management Console</title>
     <style>
-        :root {
-            --bg-dark: #0a0f1d;
-            --panel-bg: #131c33;
-            --accent-green: #10b981;
-            --accent-blue: #3b82f6;
-            --accent-red: #ef4444;
-            --text-light: #f3f4f6;
-            --border-color: #24335c;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        h1 { margin: 0; color: var(--text-light); font-size: 24px; font-weight: 700; }
-        .badge { background: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 12px; }
-
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
-        .panel {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-        }
-
-        .panel-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #9ca3af;
-        }
-
-        /* Metrics Display Grid */
-        .vitals-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .vital-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .vital-value { font-size: 28px; font-weight: bold; margin: 5px 0; color: var(--accent-green); }
-        .vital-label { font-size: 12px; color: #9ca3af; }
-
-        /* Interface Input Groups */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label { display: block; font-size: 13px; margin-bottom: 5px; color: #9ca3af; }
-        select, input {
-            width: 100%;
-            padding: 10px;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            color: white;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        button:hover { background-color: #2563eb; }
-        button.action-btn { background-color: #4b5563; margin-bottom: 10px; }
-        button.action-btn:hover { background-color: #374151; }
-
-        .timeline-slider-box {
-            grid-column: span 2;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .timeline-indicator {
-            font-weight: bold;
-            font-family: monospace;
-            background: var(--bg-dark);
-            padding: 5px 10px;
-            border-radius: 4px;
-            white-space: nowrap;
-        }
+        :root { --bg-dark: #070b14; --panel-bg: #111a2e; --accent-blue: #2563eb; --accent-green: #059669; --accent-red: #dc2626; --border: #1e293b; --text: #f8fafc; }
+        body { font-family: system-ui, sans-serif; background: var(--bg-dark); color: var(--text); padding: 25px; margin: 0; }
+        .wrapper { max-width: 1300px; margin: 0 auto; }
+        header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+        .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+        .panel-header { font-size: 14px; text-transform: uppercase; color: #94a3b8; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px; }
+        .vitals-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+        .card { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 15px; border-radius: 6px; text-align: center; }
+        .card-val { font-size: 32px; font-weight: bold; color: var(--accent-green); margin: 5px 0; }
+        .card-lbl { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+        .control-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; margin-bottom: 6px; color: #94a3b8; }
+        select, input, button { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border); color: white; border-radius: 6px; box-sizing: border-box; font-weight: 600; }
+        button { cursor: pointer; background: var(--accent-blue); border: none; transition: filter 0.2s; }
+        button:hover { filter: brightness(1.2); }
+        .footer-bar { margin-top: 25px; background: var(--panel-bg); border: 1px solid var(--border); padding: 15px; border-radius: 8px; display: flex; align-items: center; gap: 20px; font-family: monospace; }
     </style>
 </head>
 <body>
-
-<div class="dashboard-container">
+<div class="wrapper">
     <header>
         <div>
-            <h1>PokePlap Digital Twin Dashboard</h1>
-            <small style="color: #6b7280;">Real-time Telemetry & Physics-Informed Temporal Projection</small>
+            <h1 style="margin:0; font-size:26px;">PokePlap Enterprise Core Matrix</h1>
+            <small style="color:#64748b;">Cross-Sector Predictive Time-Scrubbing Interface Loop</small>
         </div>
-        <div class="badge">NVIDIA AI CORE ONLINE</div>
+        <div style="width: 250px;">
+            <label>TARGET SECTOR INTERFACE DEPLOYMENT</label>
+            <select id="sector-selector" onchange="switchSector()">
+                <option value="icu_human">Legacy Track: Human ICU Telemetry</option>
+                <option value="aquaculture">AgTech Track: Symbiotic Biome Aquaculture</option>
+                <option value="bio_logistics">Logistics Track: Cold Chain Biological Freight</option>
+                <option value="datacenter_symbiosis">CleanTech Track: Industrial Data Center Greenhouse</option>
+            </select>
+        </div>
     </header>
 
-    <div class="grid-layout">
-        <!-- Vitals Tracking Module -->
+    <div class="grid">
         <div class="panel">
-            <h3 class="panel-title">Active Biological Monitor</h3>
-            <div class="vitals-grid">
-                <div class="vital-card">
-                    <div class="vital-label">HEART RATE</div>
-                    <div class="vital-value" id="val-hr">--</div>
-                    <div class="vital-label">BPM</div>
-                </div>
-                <div class="vital-card">
-                    <div class="vital-label">BLOOD PRESSURE</div>
-                    <div class="vital-value" id="val-bp">--</div>
-                    <div class="vital-label">mmHg (Systolic)</div>
-                </div>
-                <div class="vital-card">
-                    <div class="vital-label">OXYGEN SATURATION</div>
-                    <div class="vital-value" id="val-spo2">--</div>
-                    <div class="vital-label">SpO₂ (%)</div>
-                </div>
-                <div class="vital-card">
-                    <div class="vital-label">CORTISOL COMPONENT</div>
-                    <div class="vital-value" id="val-cortisol">--</div>
-                    <div class="vital-label">mcg/dL</div>
-                </div>
-            </div>
-
-            <!-- Standard Simulation Controls -->
-            <h3 class="panel-title">Standard Chrono Engine Controls</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button class="action-btn" onclick="stepTimeline()">Advance Next Step (1 Min)</button>
-                <button class="action-btn" onclick="refreshTelemetry()">Pull Engine State</button>
-            </div>
+            <div class="panel-header" id="monitor-title">Telemetry Stream Engine Monitor</div>
+            <div class="vitals-grid" id="vitals-container"></div>
+            <button style="background:#475569;" onclick="stepFrame()">Advance Baseline Single Step (1 Min)</button>
         </div>
 
-        <!-- Right Menu: Time-Scrubbing Controls -->
         <div class="panel">
-            <h3 class="panel-title">Clinical Interventions ("Poke")</h3>
-            <div class="form-group">
-                <label for="poke-variable">Select Variable Target</label>
-                <select id="poke-variable">
-                    <option value="endocrine_cortisol">Endocrine Cortisol</option>
-                    <option value="heart_rate">Heart Rate Baseline</option>
-                    <option value="blood_pressure_systolic">Systolic Blood Pressure</option>
-                    <option value="oxygen_saturation">Oxygen Saturation (0-1)</option>
-                </select>
+            <div class="panel-header">Matrix Manipulation Matrix ("Poke")</div>
+            <div class="control-group">
+                <label>Target Variable Factor</label>
+                <select id="poke-target"></select>
             </div>
-            <div class="form-group">
-                <label for="poke-value">Override Numerical Value</label>
-                <input type="number" id="poke-value" step="any" placeholder="e.g. 50.0">
+            <div class="control-group">
+                <label>Injection Scalar Override Value</label>
+                <input type="number" id="poke-value" step="any">
             </div>
-            <button style="background-color: var(--accent-red); margin-bottom: 25px;" onclick="executePoke()">Execute Matrix Override (Poke)</button>
+            <button style="background:var(--accent-red); margin-bottom:20px;" onclick="poke()">Execute Vector Poke Override</button>
 
-            <h3 class="panel-title">Predictive Fast-Forward</h3>
-            <div class="form-group">
-                <label for="ff-minutes">Jump Interval Time (Minutes)</label>
-                <input type="number" id="ff-minutes" value="15">
+            <div class="panel-header">Time-Scrubbing Calculations Engine</div>
+            <div class="control-group">
+                <label>Fast-Forward Projection Bounds (Minutes)</label>
+                <input type="number" id="ff-val" value="15">
+                <button style="background:var(--accent-green); margin-top:8px;" onclick="fastForward()">Run Forward Projection Matrix</button>
             </div>
-            <button style="background-color: var(--accent-green); margin-bottom: 15px;" onclick="executeFastForward()">Run Projection Loop</button>
-
-            <h3 class="panel-title">Historical Rewind</h3>
-            <div class="form-group">
-                <label for="rw-steps">Steps to Wind Backward</label>
-                <input type="number" id="rw-steps" value="5">
+            <div class="control-group" style="margin-top:20px;">
+                <label>Rewind Buffer History Frames</label>
+                <input type="number" id="rw-val" value="5">
+                <button style="background:#4b5563; margin-top:8px;" onclick="rewind()">Restore CCH Historical Frame</button>
             </div>
-            <button style="background-color: #6b7280;" onclick="executeRewind()">Restore Cache Frame</button>
         </div>
+    </div>
 
-        <!-- Footer Timeline Status Track Bar -->
-        <div class="timeline-slider-box">
-            <span class="vital-label">TIMELINE HEAD:</span>
-            <div class="timeline-indicator" id="timeline-index">STEP: 0000</div>
-            <div id="status-log" style="font-size: 12px; color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"> System operational. Engine running inside container instance.</div>
-        </div>
+    <div class="footer-bar">
+        <span style="color:var(--accent-blue); font-weight:bold;">ENGINE HEAD:</span>
+        <div id="step-lbl" style="background:#000; padding:5px 12px; border-radius:4px;">STEP: 0000</div>
+        <div id="log" style="color:#94a3b8; font-size:13px;">System online. Operational matrix listening.</div>
     </div>
 </div>
 
 <script>
-    const API_BASE = "http://localhost:8000";
+    const API = "http://localhost:8000";
+    let activeMetrics = {};
 
-    function updateUI(data) {
-        if (!data || !data.state) return;
-        const v = data.state;
-        document.getElementById('val-hr').innerText = v.heart_rate;
-        document.getElementById('val-bp').innerText = v.blood_pressure_systolic;
-        document.getElementById('val-spo2').innerText = (v.oxygen_saturation * 100).toFixed(2) + "%";
-        document.getElementById('val-cortisol').innerText = v.endocrine_cortisol;
-        document.getElementById('timeline-index').innerText = `STEP: ${data.current_step}`;
+    async function switchSector() {
+        const sector = document.getElementById('sector-selector').value;
+        const res = await fetch(`${API}/initialize-sector`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ sector_id: sector })
+        });
+        document.getElementById('log').innerText = `Switched sector loop context workspace target to: ${sector}`;
+        getTelemetry();
     }
 
-    function logStatus(msg) {
-        document.getElementById('status-log').innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-    }
-
-    async function refreshTelemetry() {
-        try {
-            const res = await fetch(`${API_BASE}/telemetry`);
-            const data = await res.json();
-            updateUI(data);
-            logStatus("Fetched live twin parameters.");
-        } catch (err) {
-            logStatus("Connection error checking backend server availability.");
+    async function getTelemetry() {
+        const res = await fetch(`${API}/telemetry`);
+        const data = await res.json();
+        activeMetrics = data.metrics;
+        
+        document.getElementById('step-lbl').innerText = `STEP: ${data.current_step}`;
+        document.getElementById('monitor-title').innerText = `Active Telemetry Stream: [${data.sector.toUpperCase()}]`;
+        
+        const container = document.getElementById('vitals-container');
+        const selector = document.getElementById('poke-target');
+        
+        const currentTarget = selector.value;
+        container.innerHTML = '';
+        selector.innerHTML = '';
+        
+        for (let key in activeMetrics) {
+            container.innerHTML += `<div class="card"><div class="card-lbl">${key.replace(/_/g,' ')}</div><div class="card-val">${activeMetrics[key]}</div></div>`;
+            selector.innerHTML += `<option value="${key}">${key}</option>`;
         }
+        if(currentTarget && activeMetrics[currentTarget] !== undefined) selector.value = currentTarget;
     }
 
-    async function stepTimeline() {
-        try {
-            const res = await fetch(`${API_BASE}/step`, { method: 'POST' });
-            const data = await res.json();
-            updateUI(data);
-            logStatus("Advanced simulation baseline by 1 minute.");
-        } catch (err) { logStatus("Failed to process simulation step."); }
+    async function stepFrame() {
+        await fetch(`${API}/step`, {method: 'POST'});
+        getTelemetry();
     }
 
-    async function executePoke() {
-  const varName = document.getElementById('poke-variable').value;
-const valInput = parseFloat(document.getElementById('poke-value').value);
-if (isNaN(valInput)) return alert("Please supply a valid matrix float value.");
-try {
-const res = await fetch(${API_BASE}/poke, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ variable_name: varName, value: valInput })
-});
-const data = await res.json();
-updateUI(data);
-logStatus(Poked ${varName} to override to ${valInput}. Future vectors updated.);
-} catch (err) { logStatus("Failed to apply variable injection update."); }
-}
-async function executeFastForward() {
-const mins = parseFloat(document.getElementById('ff-minutes').value);
-try {
-const res = await fetch(${API_BASE}/fast-forward, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ minutes: mins })
-});
-const data = await res.json();
-updateUI(data);
-logStatus(Fast-forward loop complete. Projected +${mins} simulated mins.);
-} catch (err) { logStatus("Fast-forward mathematical computation error."); }
-}
-async function executeRewind() {
-const steps = parseInt(document.getElementById('rw-steps').value);
-try {
-const res = await fetch(${API_BASE}/rewind, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ steps: steps })
-});
-const data = await res.json();
-updateUI(data);
-logStatus(Loaded cache entry snapshot. Wound back ${steps} ticks.);
-} catch (err) { logStatus("Unable to wind back timeline. Target state outside buffer."); }
-}
-// Initialize application parameters on load
-window.onload = refreshTelemetry;
+    async function poke() {
+        const vName = document.getElementById('poke-target').value;
+        const val = parseFloat(document.getElementById('poke-value').value);
+        await fetch(`${API}/poke`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ variable_name: vName, value: val })
+        });
+        getTelemetry();
+    }
+
+    async function fastForward() {
+        const mins = parseFloat(document.getElementById('ff-val').value);
+        await fetch(`${API}/fast-forward`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ minutes: mins })
+        });
+        getTelemetry();
+    }
+
+    async function rewind() {
+        const steps = parseInt(document.getElementById('rw-val').value);
+        await fetch(`${API}/rewind`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ steps: steps })
+        });
+        getTelemetry();
+    }
+
+    window.onload = getTelemetry;
+</script>
+</body>
+</html>
