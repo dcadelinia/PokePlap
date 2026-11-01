@@ -1,0 +1,45 @@
+name: "pokeplap_physiological_engine"
+platform: "ensemble"
+max_batch_size: 256 
+
+input [
+{
+name: "initial_physiological_state"
+data_type: TYPE_FP32
+dims: # Heart Rate, Systolic BP, Oxygen Saturation, Metabolic Index
+},
+{
+name: "temporal_delta_vector"
+data_type: TYPE_FP32
+dims: # Time shift variable in seconds
+},
+{
+name: "poked_variable_adjustments"
+data_type: TYPE_FP32
+dims: # Delta modifications applied interactively
+}
+] 
+
+output [
+{
+name: "projected_state_trajectory"
+data_type: TYPE_FP32
+dims:
+},
+{
+name: "calculated_hazard_index"
+data_type: TYPE_FP32
+dims:
+}
+] 
+
+instance_group [
+{
+count: 2
+kind: KIND_GPU # Directly binds execution loops onto dedicated parallel NVIDIA architecture nodes
+}
+] 
+
+dynamic_batching {
+max_queue_delay_microseconds: 5000
+}
