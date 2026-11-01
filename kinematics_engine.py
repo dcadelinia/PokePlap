@@ -1,104 +1,66 @@
 import math
-import logging
-from typing import Dict, Any, List
-from pydantic import BaseModel, Field 
+from models import PhysiologicalState 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("PokePlapKinematics") 
-
-class RoboticAssetState(BaseModel):
-asset_id: str
-position_xyz: List[float] = Field(..., min_items=3, max_items=3)
-velocity_xyz: List[float] = Field(..., min_items=3, max_items=3)
-mass_kg: float
-braking_friction_coeff: float 
-
-class IndustrialForesightRequest(BaseModel):
-assets: List[RoboticAssetState]
-lookahead_seconds: float = Field(13.0, description="The abstract temporal foresight calculation window")
-conveyor_speed_mps: float = 0.0 
-
-class PokePlapKinematicsEngine:
+class BiologicalKinematicsEngine:
 """
-Proprietary Physics-Informed Industrial Kinematics and Predictive Collision Engine.
-Protected under WTO-TRIPS, DTSA, and TUTSA Trade Secret Registries for
-David Fabian Cadelinia and Odynex Axis Logistics LLC.
+Physics-informed modeling engine that projects biological state mutations
+forward over discrete time deltas (dt) based on active physiological variables.
+""" 
+
+@staticmethod
+def project_next_state(current: PhysiologicalState, dt: float) -> PhysiologicalState:
 """
-def **init**(self):
-# Base environmental friction and safety thresholds for heavy machinery
-self.safety_margin_meters = 1.5
-self.g_constant = 9.81 
+Applies simplified biophysical differential equations to project the next
+physiological state array after an elapsed time delta (dt in minutes).
+"""
+### --- Biological Decay and Homeostatic Constants ---
 
-def calculate_foresight_loop(self, assets: List[RoboticAssetState], lookahead_seconds: float) -> Dict[str, Any]:
-logger.info(f"Initiating high-frequency industrial foresight loop simulation for {len(assets)} active assets.") 
+CORTISOL_DECAY_RATE = 0.05  # Metabolic clearance rate per minute
+BASE_HEART_RATE = 70.0      # Homeostatic target
+HEART_RATE_RECOVERY = 0.1   # Rate of return to baseline per minute 
 
-imminent_collisions = []
-projected_trajectories = {}
-global_system_hazard_index = 0.0
-### Step 1: Compute deterministic trajectory paths based on velocity vectors and kinematic mass laws
+### 1. Endocrine Decay (Exponential clearance)
 
-for asset in assets:
-pos = asset.position_xyz
-vel = asset.velocity_xyz 
+### d[Cortisol]/dt = -k * [Cortisol]
 
-### Calculate physical stopping distance under emergency braking profile: d = v^2 / (2 * mu * g)
+new_cortisol = current.endocrine_cortisol * math.exp(-CORTISOL_DECAY_RATE * dt)
+if new_cortisol < 2.0:  # Floor baseline
+new_cortisol = 2.0 
 
-velocity_magnitude = math.sqrt(sum(v**2 for v in vel))
-if asset.braking_friction_coeff > 0:
-stopping_distance = (velocity_magnitude**2) / (2 * asset.braking_friction_coeff * self.g_constant)
+### 2. Heart Rate Response to Endocrine / Homeostatic Pull
+
+### High cortisol drives elevated heart rate; system naturally decays back to baseline
+
+hr_drive = (current.endocrine_cortisol - 5.0) * 1.5
+target_hr = BASE_HEART_RATE + max(0.0, hr_drive) 
+
+### Simple Euler integration step for Heart Rate adjustment
+
+hr_delta = (target_hr - current.heart_rate) * HEART_RATE_RECOVERY * dt
+new_hr = current.heart_rate + hr_delta 
+
+### 3. Blood Pressure Coupling
+
+### Systolic linked directly to vascular resistance and cardiac output proxies
+
+target_bp = 120.0 + (new_hr - BASE_HEART_RATE) * 0.4
+bp_delta = (target_bp - current.blood_pressure_systolic) * 0.2 * dt
+new_bp = current.blood_pressure_systolic + bp_delta 
+
+### 4. Oxygen Saturation Homeostasis
+
+### Decreases slightly under severe tachycardic strain for simulation dynamics
+
+if new_hr > 130:
+spo2_decay = 0.005 * (new_hr - 130) * dt
+new_spo2 = max(0.70, current.oxygen_saturation - spo2_decay)
 else:
-stopping_distance = float('inf') 
+new_spo2 = min(1.0, current.oxygen_saturation + (1.0 - current.oxygen_saturation) * 0.1 * dt) 
 
-### Linearly project the future coordinates across the abstract temporal window
-
-future_x = pos + (vel * lookahead_seconds)
-future_y = pos + (vel * lookahead_seconds)
-future_z = pos + (vel * lookahead_seconds) 
-
-projected_trajectories[asset.asset_id] = {
-"stopping_distance_meters": round(stopping_distance, 2),
-"projected_coordinates_xyz": [round(future_x, 3), round(future_y, 3), round(future_z, 3)]
-} 
-
-### Step 2: Proactively scan for cross-trajectory boundary violations (Imminent Jams or Crashes)
-
-asset_ids = list(projected_trajectories.keys())
-for i in range(len(asset_ids)):
-for j in range(i + 1, len(asset_ids)):
-id_a = asset_ids[i]
-id_b = asset_ids[j] 
-
-coord_a = projected_trajectories[id_a]["projected_coordinates_xyz"]
-coord_b = projected_trajectories[id_b]["projected_coordinates_xyz"]
-
-### Euclidean distance calculation between projected assets in 3D spacetime grid
-
-distance_between = math.sqrt(
-(coord_a - coord_b)**2 +
-(coord_a - coord_b)**2 +
-(coord_a - coord_b)**2
-) 
-
-if distance_between <= self.safety_margin_meters:
-logger.warning(f"Imminent collision/jam vector identified between asset {id_a} and asset {id_b}!")
-imminent_collisions.append({
-"assets_involved": [id_a, id_b],
-"projected_distance_meters": round(distance_between, 3),
-"time_to_impact_seconds": round((distance_between / (velocity_magnitude + 1e-5)), 2)
-})
-global_system_hazard_index += 0.5 
-
-### Step 3: Establish clear automation commands to override logic boundaries
-
-system_hazard_index = min(global_system_hazard_index, 1.0)
-intervention_action = "CONTINUOUS_FLOW"
-if system_hazard_index >= 0.5:
-intervention_action = "TRIGGER_AUTOMATED_FORESIGHT_UNDO_BRAKING" 
-
-return {
-"status": "SUCCESS",
-"system_hazard_index": system_hazard_index,
-"intervention_action_command": intervention_action,
-"imminent_breaches": imminent_collisions,
-"projected_asset_trajectories": projected_trajectories
-}
+return PhysiologicalState(
+timestamp_seq=current.timestamp_seq + 1,
+heart_rate=round(new_hr, 2),
+blood_pressure_systolic=round(new_bp, 2),
+oxygen_saturation=round(new_spo2, 4),
+endocrine_cortisol=round(new_cortisol, 3)
+)
