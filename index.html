@@ -353,3 +353,95 @@ function sendVariablePoke(variableName, numericValue, structuralIndex = 0) {
         socket.send(JSON.stringify(payload));
     }
 }
+<!-- PokePlap Enterprise Commercial Portal Segment -->
+<div class="container marketing-funnel" style="font-family: sans-serif; background: #111c24; color: #fff; padding: 30px; border-radius: 8px;">
+    
+    <!-- SECTION A: INSTANT SIMULATION SANDBOX PLAYGROUND -->
+    <div class="sandbox-module" style="border-bottom: 1px solid #233342; padding-bottom: 25px; margin-bottom: 25px;">
+        <h3 style="color: #00e676;">🔬 Interactive Demo Sandbox</h3>
+        <p style="color: #b0bec5; font-size: 14px;">Evaluate PokePlap's predictive digital twin time-scrubbing parameters instantly using isolated pre-recorded mock ICU telemetry blocks.</p>
+        <button id="sandbox-btn" onclick="toggleSandboxPlayground()" style="background: #00e676; color: #000; border: none; padding: 12px 24px; font-weight: bold; border-radius: 4px; cursor: pointer;">🚀 Launch Mock Stream Demo</button>
+        <span id="sandbox-status" style="margin-left: 15px; font-weight: bold; color: #ff9100;"></span>
+    </div>
+
+    <!-- SECTION B: ENTERPRISE SUBSCRIPTION MATRIX -->
+    <div class="billing-matrix">
+        <h3 style="color: #2196f3;">💳 Commercial Node Subscriptions</h3>
+        <p style="color: #b0bec5; font-size: 14px;">Unlock production-hardened multi-user clinician streams, persistent time-series ledger storage, and dedicated hardware-in-the-loop interfaces.</p>
+        
+        <div style="display: flex; gap: 20px; margin-top: 20px;">
+            <!-- Tier 1: Professional Node -->
+            <div style="background: #1a2632; border: 1px solid #2196f3; padding: 20px; border-radius: 6px; flex: 1;">
+                <h4>Professional Node</h4>
+                <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">$49 / mo</p>
+                <ul style="font-size: 13px; color: #b0bec5; padding-left: 20px; line-height: 1.6;">
+                    <li>Single ICU Ward Telemetry Stream</li>
+                    <li>Secure Asynchronous WebSocket Access</li>
+                    <li>Automated CSV Ledger Auditing Exports</li>
+                </ul>
+                <button onclick="initiateCheckout('professional')" style="background: #2196f3; color: #fff; width: 100%; margin-top: 15px; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer;">Subscribe Tier</button>
+            </div>
+
+            <!-- Tier 2: Enterprise Matrix -->
+            <div style="background: #1a2632; border: 2px solid #00e676; padding: 20px; border-radius: 6px; flex: 1; position: relative;">
+                <span style="position: absolute; top: -12px; right: 15px; background: #00e676; color: #000; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px;">CRO & HOSPITAL HIGH-CAPACITY</span>
+                <h4>Enterprise Matrix</h4>
+                <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">$299 / mo</p>
+                <ul style="font-size: 13px; color: #b0bec5; padding-left: 20px; line-height: 1.6;">
+                    <li>Global Multi-Region Container Mesh</li>
+                    <li>Hardware-in-the-Loop Enclosure Pairing</li>
+                    <li>NVIDIA AI Kinematics Engine Custom Models</li>
+                </ul>
+                <button onclick="initiateCheckout('enterprise')" style="background: #00e676; color: #000; width: 100%; margin-top: 15px; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer;">Deploy Enterprise Node</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let sandboxInterval = null;
+
+// Communicates with your payment_routes.py backend to spin up secure checkouts
+async def initiateCheckout(tierName) {
+    try {
+        const response = await fetch(`/api/v1/billing/checkout/session?tier=${tierName}`, { method: 'POST' });
+        const sessionData = await response.json();
+        if (sessionData.url) {
+            window.location.href = sessionData.url; // Hand over routing to secure Stripe gateway
+        } else {
+            alert('Failed to initialize connection matrix with checkout server.');
+        }
+    } catch (err) {
+        console.error('Checkout error:', err);
+    }
+}
+
+// Drives instant client validation by executing pre-recorded simulation blocks
+function toggleSandboxPlayground() {
+    const btn = document.getElementById('sandbox-btn');
+    const status = document.getElementById('sandbox-status');
+    
+    if (sandboxInterval) {
+        clearInterval(sandboxInterval);
+        sandboxInterval = null;
+        btn.innerText = "🚀 Launch Mock Stream Demo";
+        status.innerText = "Sandbox Interrupted.";
+        status.style.color = "#ff9100";
+    } else {
+        btn.innerText = "🛑 Stop Sandbox Stream";
+        status.innerText = "LIVE STREAM DEMO RUNNING...";
+        status.style.color = "#00e676";
+        
+        // Simulates automated variable pokes to update visual telemetry models locally
+        sandboxInterval = setInterval(() => {
+            const randomCortisolValue = (Math.random() * (25.0 - 5.0) + 5.0).toFixed(1);
+            console.log(`[SANDBOX MOCK INJECTION] Automatically poking cortisol to: ${randomCortisolValue} µg/dL`);
+            
+            // If your socket handler from previous sections is open, it transmits directly:
+            if (typeof sendVariablePoke === "function") {
+                sendVariablePoke('cortisol', randomCortisolValue, 999);
+            }
+        }, 1500);
+    }
+}
+</script>
