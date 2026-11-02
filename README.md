@@ -33,3 +33,23 @@ docker-compose up --build -d
 curl http://localhost:8000/health
 
 Use code with caution.
+### 🎛️ Hardware-in-the-Loop (HIL) Integration
+
+The PokePlap platform is architected to seamlessly interface with physical control surfaces and edge computing terminal enclosures via standard industrial protocols. 
+
+#### Recommended Terminal Hardware Specifications:
+* **Enclosure:** Fanless, sealed aluminum chassis with integrated passive cooling (optimized for clinical sanitization).
+* **Control Inputs:** 4x Optocoupled Rotary Encoders (Vitals Tuning), 3x 60mm Linear Potentiometers (Timeline / Scrubbing).
+* **Core Unit:** NVIDIA Jetson Edge AI Platform or comparable x86 container-ready terminal.
+
+#### Interfacing via Local API
+You can map physical physical dials directly to the simulation engine by sending asynchronous payloads to the local daemon gateway:
+
+```bash
+# Example payload sent by a physical dial adjustment to the API Gateway
+curl -X POST http://localhost:8000/api/v1/hardware/poke \
+  -H "Content-Type: application/json" \
+  -d '{"variable": "cortisol", "value": 12.5, "source": "hw_fader_ch1"}'
+```
+
+***
