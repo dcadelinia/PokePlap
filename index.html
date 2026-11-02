@@ -319,3 +319,37 @@
 </script>
 </body>
 </html>
+// Open a bi-directional live pipe to your PokePlap server
+const socket = new WebSocket('ws://localhost:8000/api/v1/stream');
+
+// Log when the interface successfully connects to the backend
+socket.onopen = () => {
+    console.log('Successfully connected to PokePlap backend engine via WebSocket.');
+};
+
+// Listen for incoming live state updates computed by the server
+socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.status === 'computed') {
+        console.log(`Live Update received from source: ${data.source}`);
+        
+        // Update your UI charts, vital graphs, or numbers here
+        // Example: document.getElementById('cortisol-display').innerText = data.simulated_metrics.cortisol;
+        console.log('New State Metrics:', data.simulated_metrics);
+    }
+};
+
+// Function to call whenever a slider is dragged or "poked" in the UI
+function sendVariablePoke(variableName, numericValue, structuralIndex = 0) {
+    const payload = {
+        event: "variable_poke",
+        source: "web_ui",
+        variable: variableName,
+        value: parseFloat(numericValue),
+        timeline_index: structuralIndex
+    };
+    
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify(payload));
+    }
+}
