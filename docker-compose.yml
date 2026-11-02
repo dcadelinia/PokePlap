@@ -17,3 +17,32 @@ test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
 interval: 30s
 timeout: 10s
 retries: 3
+version: '3.8'
+
+services:
+  # Core PostgreSQL relational infrastructure node
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: pokeplap_local_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pokeplap
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Web-based database management user interface dashboard
+  db_admin_panel:
+    image: adminer:latest
+    container_name: pokeplap_db_admin
+    restart: always
+    ports:
+      - "3333:8080"
+    depends_on:
+      - postgres_db
+
+volumes:
+  postgres_data:
