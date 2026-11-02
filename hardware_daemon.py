@@ -54,3 +54,22 @@ if __name__ == "__main__":
         asyncio.run(read_hardware_dials())
     except KeyboardInterrupt:
         print("\nHardware daemon shut down cleanly.")
+import serial.tools.list_ports
+
+def find_active_usb_channels():
+    print("Scanning system for physical hardware controllers...")
+    ports = serial.tools.list_ports.comports()
+    
+    if not ports:
+        print("❌ No active USB Serial hardware detected. Check your cable connection.")
+        return
+        
+    for port in ports:
+        print(f" Detected Port: {port.device}")
+        print(f"   Description: {port.description}")
+        print(f"   Hardware ID: {port.hwid}\n")
+        print(f"👉 Use '{port.device}' inside your hardware_daemon.py script configuration.")
+
+if __name__ == "__main__":
+    find_active_usb_channels
+    ()
