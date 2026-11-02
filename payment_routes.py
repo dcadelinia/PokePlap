@@ -1,95 +1,97 @@
-# ==========================================
-# FILE: payment_routes.py
-# ==========================================
 import os
-import stripe
-from fastapi import APIRouter, HTTPException, Depends, Body, Header
+import json
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, Header, Request, status
 from fastapi.responses import RedirectResponse
-from subscription_config import VALID_LICENSE_KEYS
+from fastapi.concurrency import run_in_threadpool
+import stripe
 
-# Initialize Stripe Client via Environment Variables
-# For testing: use your Stripe secret test key (sk_test_...)
-# For production profits: swap to your Stripe live key (sk_live_...)
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "sk_test_mock_placeholder_key_if_empty")
+# Initialize router for explicit platform mounting
+router = APIRouter(prefix="/api/v1/billing", tags=["Commercial Monetization"])
 
-router = APIRouter(prefix="/billing", tags=["Enterprise Monetization Matrix"])
+# Pull secrets from your Fly.io encrypted environment configuration
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "sk_test_mock_keys_here")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "whsec_mock_webhook")
+PLATFORM_DOMAIN = os.getenv("PLATFORM_DOMAIN", "https://fly.dev")
 
-# Define B2B SaaS Pricing Plan Mapping (Stripe Price IDs)
-# Create these products inside your Stripe Dashboard to get your distinct price ids
-PLAN_PRICE_IDS = {
-    "plan_icu_basic": os.getenv("STRIPE_PRICE_ICU", "price_mock_icu_basic"),
-    "plan_agtech_pro": os.getenv("STRIPE_PRICE_AGTECH", "price_mock_agtech_pro"),
-    "plan_global_matrix": os.getenv("STRIPE_PRICE_GLOBAL", "price_mock_global_matrix")
+# Map your commercial product pricing IDs from your Stripe dashboard
+SUBSCRIPTION_TIERS = {
+    "professional": os.getenv("STRIPE_PRICE_PROFESSIONAL", "price_mock_prof_123"),
+    "enterprise": os.getenv("STRIPE_PRICE_ENTERPRISE", "price_mock_ent_456")
 }
 
-# Explicit Token Generation Keys mapped securely back to configuration allocations
-TIER_TOKENS = {
-    "plan_icu_basic": "SKU-CLINICAL-FREE-99",
-    "plan_agtech_pro": "SKU-AQUA-PRO-77X",
-    "plan_global_matrix": "SKU-GLOBAL-ENTERPRISE-DYNAMIC-MATRIX"
-}
-
-@router.post("/create-checkout-session")
-async def create_subscription_checkout(
-    plan_id: str = Body(..., embed=True),
-    success_url: str = Body("https://fly.dev", embed=True),
-    cancel_url: str = Body("https://fly.dev", embed=True)
-):
+@router.post("/checkout/session")
+async def create_checkout_session(tier: str, request: Request):
     """
-    Generates a secure, encrypted Stripe Checkout portal link.
-    Redirects incoming global corporate clients directly to the credit card payment lane.
+    Spins up an automated checkout session for prospective clinical accounts.
+    Redirects buyers directly to Stripe's secure PCI-compliant gateway.
     """
-    if plan_id not in PLAN_PRICE_IDS:
-        raise HTTPException(status_code=400, detail="Requested B2B subscription tier package does not exist.")
+    if tier not in SUBSCRIPTION_TIERS:
+        raise HTTPException(status_code=400, detail="Invalid target subscription tier.")
         
     try:
-        # Construct secure billing session parameters
-        session = stripe.checkout.Session.create(
+        # Generate session routing matrices using thread pool
+        session = await run_in_threadpool(
+            stripe.checkout.Session.create,
             payment_method_types=['card'],
             line_items=[{
-                'price': PLAN_PRICE_IDS[plan_id],
+                'price': SUBSCRIPTION_TIERS[tier],
                 'quantity': 1,
             }],
             mode='subscription',
-            success_url=f"{success_url}&session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=cancel_url,
-            metadata={"target_plan_allocation": plan_id}
+            success_url=f"{PLATFORM_DOMAIN}/dashboard?session_id={{CHECKOUT_SESSION_ID}}&billing_status=success",
+            cancel_url=f"{PLATFORM_DOMAIN}/pricing?billing_status=cancelled",
         )
-        return {"checkout_url": session.url}
+        return {"url": session.url}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Stripe Gateway Engine Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Stripe Session Generation Error: {str(e)}")
+
+@router.post("/portal")
+async def create_billing_portal(customer_id: str):
+    """
+    Generates a secure self-service billing link.
+    Allows hospital administrators to upgrade, downgrade, or cancel tiers.
+    """
+    try:
+        portal_session = await run_in_threadpool(
+            stripe.billing_portal.Session.create,
+            customer=customer_id,
+            return_url=f"{PLATFORM_DOMAIN}/dashboard"
+        )
+        return {"url": portal_session.url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Portal Generation Failure: {str(e)}")
 
 @router.post("/webhook")
-async def stripe_automated_webhook_listener(
-    payload: bytes = Body(...),
-    sig_header: str = Header(None, alias="Stripe-Signature")
-):
+async def stripe_webhook_handler(request: Request, stripe_signature: str = Header(None)):
     """
-    Production-grade background listener event webhook.
-    Fires instantly the exact second a client's credit card clears successfully.
-    Generates their secure system access key on the fly.
+    Asynchronous transaction listener endpoint.
+    Intercepts raw webhooks from Stripe to activate/deactivate simulation features instantly.
     """
-    endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    payload = await request.body()
     
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+        # Securely verify payload origins using webhook signatures
+        event = stripe.Webhook.construct_event(
+            payload, stripe_signature, STRIPE_WEBHOOK_SECRET
+        )
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid payload data payload array.")
+        raise HTTPException(status_code=400, detail="Invalid payload signature metadata.")
     except stripe.error.SignatureVerificationError:
-        raise HTTPException(status_code=400, detail="Signature authentication verification mismatch.")
+        raise HTTPException(status_code=400, detail="Signature verification rejected.")
 
-    # Process successful initial checkout activations or continuous renewals
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        target_plan = session.get("metadata", {}).get("target_plan_allocation")
-        customer_email = session.get("customer_details", {}).get("email", "unknown@corporate.com")
-        
-        if target_plan in TIER_TOKENS:
-            generated_key = TIER_TOKENS[target_plan]
-            print(f"💰 PROFIT DISCOVERED: Customer {customer_email} successfully paid for tier {target_plan}!")
-            print(f"🔒 SYSTEM ACCESS PROVISIONED: License Key activated -> {generated_key}")
-            
-            # Persist key dynamically into active deployment lists (or cross-node database registries)
-            VALID_LICENSE_KEYS[generated_key] = target_plan
+    event_type = event['type']
+    data_object = event['data']['object']
 
-    return {"status": "event_processed_successfully"}
+    # --- HANDLE COMMERCIAL ENTITY EVENTS ---
+    if event_type == "checkout.session.completed":
+        customer_id = data_object.get("customer")
+        subscription_id = data_object.get("subscription")
+        print(f"💰 Checkout Complete! Account Customer ID: {customer_id} | Sub: {subscription_id}")
+        # TODO: Link your internal database to map account subscription state -> True
+
+    elif event_type == "customer.subscription.deleted":
+        customer_id = data_object.get("customer")
+        print(f"🛑 Subscription terminated or lapsed for customer: {customer_id}")
+        # TODO: Lock premium digital twin timeline features for this clinician group
+
+    return {"status": "event_processed"}
