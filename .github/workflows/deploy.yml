@@ -1,0 +1,22 @@
+name: Fly Deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy Application Container Mesh
+    runs-on: ubuntu-latest
+    concurrency: deploy-group    
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flyway CLI Infrastructure
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Build and Push to Fly.io Production Matrix
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN}}
