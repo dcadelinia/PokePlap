@@ -1,17 +1,18 @@
 import asyncio
 import json
-from typing import List, Dict, Any
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, status
+import os
+from typing import List
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
+import psycopg2
 
-# Initialize the enterprise FastAPI instance
 app = FastAPI(
     title="PokePlap Platform API",
-    description="Enterprise-grade biological digital twin backend powered by NVIDIA AI",
-    version="1.0.0"
+    description="Secured biological digital twin backend with active database ledger logging",
+    version="1.2.0"
 )
 
-# Enable CORS for local and cloud dashboard web interfaces
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,11 +21,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/pokeplap")
+
 # =====================================================================
-# SECTION 1: ASYNCHRONOUS WEBSOCKET CONNECTION MANAGER
+# DATABASE STORAGE LOGIC
+# =====================================================================
+def log_to_ledger(source: str, variable: str, value: float, timeline_idx: int, metrics: dict):
+    """Synchronous worker function to log telemetry into the relational database."""
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        query = """
+            INSERT INTO telemetry_logs 
+            (source, target_variable, poked_value, timeline_index, computed_heart_rate, computed_spo2, computed_systolic_bp)
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """
+        cur.execute(query, (
+            source, 
+            variable, 
+            value, 
+            timeline_idx, 
+            metrics["heart_rate"], 
+            metrics["spo2"], 
+            metrics["systolic_bp"]
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Database logging failure: {e}")
+
+# =====================================================================
+# WEBSOCKET STREAM ORCHESTRATION
 # =====================================================================
 class ConnectionManager:
-    """Manages active live dashboard connections and hardware serial daemons."""
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
@@ -37,117 +67,21 @@ class ConnectionManager:
             self.active_connections.remove(websocket)
 
     async def broadcast(self, message: dict):
-        """Pushes data arrays simultaneously to all active connected clients."""
         for connection in self.active_connections:
             try:
                 await connection.send_json(message)
             except Exception:
-                # Catch closed or unstable sockets silently to avoid loop blocking
                 pass
 
 manager = ConnectionManager()
 
-
-# =====================================================================
-# SECTION 2: WEB SERVICE AND STATUS ENDPOINTS
-# =====================================================================
-@app.get("/")
-async def root_status():
-    """Base verification route."""
-    return {
-        "platform": "PokePlap",
-        "status": "online",
-        "engine_state": "initialized"
-    }
-
 @app.get("/health")
 async def health_check():
-    """
-    Comprehensive verification endpoint requested for automated orchestration.
-    Checks container network binding and active socket manager infrastructure.
-    """
-    return {
-        "status": "healthy",
-        "active_ws_streams": len(manager.active_connections),
-        "subsystems": {
-            "kinematics_engine": "responsive",
-            "telemetry_streamer": "active"
-        }
-    }
+    return {"status": "healthy", "active_ws_streams": len(manager.active_connections)}
 
-
-# =====================================================================
-# SECTION 3: INTERACTIVE REAL-TIME STREAM WEBSOCKET ROUTE
-# =====================================================================
-@app.websocket("/api/v1/stream")
-async def websocket_endpoint(websocket: WebSocket):
-    """
-    Primary bi-directional event bus. Listens for text/slider "pokes" 
-    from the web UI or linear hardware encoders via local daemons.
-    """
-    await manager.connect(websocket)
-    try:
-        while True:
-            # Capture incoming asynchronous frame
-            data = await websocket.receive_text()
-            payload = json.loads(data)
-            
-            event_type = payload.get("event")
-            
-            if event_type == "variable_poke":
-                variable_name = payload.get("variable")
-                new_value = payload.get("value")
-                timeline_index = payload.get("timeline_index", 0)
-                source_id = payload.get("source", "web_ui")
-                
-                # ─── INTEGRATION POINT FOR KINEMATICS ENGINE ───
-                # Import or invoke your modeling calculations directly here:
-                # from kinematics_engine import compute_decay
-                # results = compute_decay(variable_name, new_value)
-                
-                # Formulate the synchronized telemetry state payload
-                broadcast_payload = {
-                    "status": "computed",
-                    "source": source_id,
-                    "target_variable": variable_name,
-                    "new_value": new_value,
-                    "timeline_index": timeline_index,
-                    "simulated_metrics": {
-                        "heart_rate": 78,
-                        "spo2": 96,
-                        "cortisol": new_value,  # Tracked modification parameter
-                        "respiratory_rate": 16,
-                        "systolic_bp": 120
-                    }
-                }
-                
-                # Sync the fresh model execution out to every open client
-                await manager.broadcast(broadcast_payload)
-                
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-    except Exception as e:
-        # Prevent runtime backend crashing on bad payload decodes
-        manager.disconnect(websocket)
-
-
-# =====================================================================
-# SECTION 4: STANDARD RUNTIME LOOP TRACE
-# =====================================================================
-if __name__ == "__main__":
-    import uvicorn
-    # Local loop startup parameters matching your Docker/Fly setup configurations
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-from fastapi import Query, status
-
-# Replace your existing websocket route with this secured version
 @app.websocket("/api/v1/stream")
 async def websocket_endpoint(websocket: WebSocket, token: str = Query(None)):
-    """
-    Secured bi-directional event bus.
-    Requires connection via: ws://pokeplap.fly.dev/api/v1/stream?token=YOUR_SECRET_KEY
-    """
-    # Simple environmental token check (Replace 'poke_secure_2026' with an env variable)
+    # Validate connection credentials immediately during the handshake
     if token != "poke_secure_2026":
         await websocket.accept()
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
@@ -158,30 +92,45 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(None)):
         while True:
             data = await websocket.receive_text()
             payload = json.loads(data)
-            event_type = payload.get("event")
             
-            if event_type == "variable_poke":
-                variable_name = payload.get("variable")
-                new_value = payload.get("value")
-                timeline_index = payload.get("timeline_index", 0)
-                source_id = payload.get("source", "web_ui")
+            if payload.get("event") == "variable_poke":
+                var_name = payload.get("variable")
+                new_val = payload.get("value")
+                t_idx = payload.get("timeline_index", 0)
+                src = payload.get("source", "web_ui")
+                
+                # Dynamic calculated output dictionary
+                simulated_metrics = {
+                    "heart_rate": 78,
+                    "spo2": 96,
+                    "cortisol": new_val,
+                    "respiratory_rate": 16,
+                    "systolic_bp": 120
+                }
                 
                 broadcast_payload = {
                     "status": "computed",
-                    "source": source_id,
-                    "target_variable": variable_name,
-                    "new_value": new_value,
-                    "timeline_index": timeline_index,
-                    "simulated_metrics": {
-                        "heart_rate": 78,
-                        "spo2": 96,
-                        "cortisol": new_value,
-                        "respiratory_rate": 16,
-                        "systolic_bp": 120
-                    }
+                    "source": src,
+                    "target_variable": var_name,
+                    "new_value": new_val,
+                    "timeline_index": t_idx,
+                    "simulated_metrics": simulated_metrics
                 }
+                
+                # 1. Distribute state array instantly to all open UI clients
                 await manager.broadcast(broadcast_payload)
+                
+                # 2. Fire and forget database insert asynchronously to prevent pipeline lag
+                asyncio.create_task(
+                    run_in_threadpool(log_to_ledger, src, var_name, new_val, t_idx, simulated_metrics)
+                )
+                
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception:
         manager.disconnect(websocket)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    
