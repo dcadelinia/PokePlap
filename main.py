@@ -138,3 +138,50 @@ if __name__ == "__main__":
     import uvicorn
     # Local loop startup parameters matching your Docker/Fly setup configurations
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+from fastapi import Query, status
+
+# Replace your existing websocket route with this secured version
+@app.websocket("/api/v1/stream")
+async def websocket_endpoint(websocket: WebSocket, token: str = Query(None)):
+    """
+    Secured bi-directional event bus.
+    Requires connection via: ws://pokeplap.fly.dev/api/v1/stream?token=YOUR_SECRET_KEY
+    """
+    # Simple environmental token check (Replace 'poke_secure_2026' with an env variable)
+    if token != "poke_secure_2026":
+        await websocket.accept()
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            payload = json.loads(data)
+            event_type = payload.get("event")
+            
+            if event_type == "variable_poke":
+                variable_name = payload.get("variable")
+                new_value = payload.get("value")
+                timeline_index = payload.get("timeline_index", 0)
+                source_id = payload.get("source", "web_ui")
+                
+                broadcast_payload = {
+                    "status": "computed",
+                    "source": source_id,
+                    "target_variable": variable_name,
+                    "new_value": new_value,
+                    "timeline_index": timeline_index,
+                    "simulated_metrics": {
+                        "heart_rate": 78,
+                        "spo2": 96,
+                        "cortisol": new_value,
+                        "respiratory_rate": 16,
+                        "systolic_bp": 120
+                    }
+                }
+                await manager.broadcast(broadcast_payload)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
+        manager.disconnect(websocket)
