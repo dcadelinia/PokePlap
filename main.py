@@ -133,4 +133,8 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(None)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-    
+    # 1. Add this import to the top of your main.py file
+from payment_routes import router as billing_router
+
+# 2. Add this routing block right after your app initialization (app = FastAPI())
+app.include_router(billing_router)
